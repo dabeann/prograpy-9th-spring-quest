@@ -11,11 +11,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
-import lombok.Data;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Data
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserRoom {
 
@@ -27,12 +28,12 @@ public class UserRoom {
     // N:1 room
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id")
-    private Room room_id;
+    private Room roomId;
 
     // N:1 user
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user_id;
+    private User userId;
 
     @Enumerated(EnumType.STRING)
     private Team team;
@@ -40,5 +41,13 @@ public class UserRoom {
     public enum Team {
         RED,
         BLUE
+    }
+
+    @Builder
+    public UserRoom(Integer id, Room roomId, User userId, Team team) {
+        this.id = id;
+        this.roomId = roomId;
+        this.userId = userId;
+        this.team = team;
     }
 }

@@ -11,11 +11,12 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
-import lombok.Data;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Data
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Room {
 
@@ -48,5 +49,17 @@ public class Room {
         WAIT, // 대기
         PROGRESS, // 진행중
         FINISH // 완료
+    }
+
+    @Builder
+    public Room(Integer id, String title, User host, RoomType room_type, RoomStatus status, LocalDateTime created_at,
+                LocalDateTime updated_at) {
+        this.id = id;
+        this.title = title;
+        this.host = host;
+        this.room_type = room_type;
+        this.status = status;
+        this.created_at = created_at;
+        this.updated_at = updated_at;
     }
 }
