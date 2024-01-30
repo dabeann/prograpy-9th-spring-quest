@@ -7,10 +7,13 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: create-drop
     properties:
       hibernate:
         format_sql: true
 
 logging.level:
   org.hibernate.SQL: debug
+
+faker:
+  url: https://fakerapi.it/api/v1/users
