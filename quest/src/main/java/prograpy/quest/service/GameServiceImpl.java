@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -14,8 +15,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+import prograpy.quest.model.Room;
+import prograpy.quest.model.Room.RoomStatus;
+import prograpy.quest.model.Room.RoomType;
 import prograpy.quest.model.User;
 import prograpy.quest.model.User.UserStatus;
 import prograpy.quest.repository.RoomRepository;
@@ -34,6 +40,15 @@ public class GameServiceImpl implements GameService{
     private final RoomRepository roomRepository;
     private final UserRoomRepository userRoomRepository;
     private final ObjectMapper objectMapper;
+
+    // 게임시작 후 1분 뒤 FINISH로 변경
+    @Scheduled(fixedDelay = 2000) // 2초마다 실행
+    @Transactional
+    public void finishGame() {
+        LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+        LocalDateTime oneMinuteAgo = LocalDateTime.now().minusMinutes(1).truncatedTo(ChronoUnit.SECONDS);
+        roomRepository.updateRoomStatusAfterTime(RoomStatus.FINISH, now, oneMinuteAgo, RoomStatus.PROGRESS);
+    }
 
     // 헬스체크
     @Override
@@ -100,7 +115,61 @@ public class GameServiceImpl implements GameService{
             }
 
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            return ApiResponse.errorResponse();
+        }
+    }
+
+    // 게임시작 API
+    @Override
+    public ApiResponse<Object> gameStart(Integer roomId, Integer userId) {
+        try {
+            Optional<Room> findRoom = roomRepository.findById(roomId);
+            Optional<User> findUser = userRepository.findById(userId);
+
+            if (findRoom.isEmpty() || findUser.isEmpty()) {
+                // 존재하지 않는 id에 대한 요청 - 201 response
+                return ApiResponse.failResponse();
+            }
+
+            Room room = findRoom.get();
+            User user = findUser.get();
+
+            // host가 아니라면 - 201 response
+            if (!room.getHostId().equals(user)){
+                return ApiResponse.failResponse();
+            }
+
+            // 방 정원이 꽉 찬 상태에서만 게임 시작 가능
+            Integer countByRoom = userRoomRepository.countUserRoomsByRoomId(room);
+            if (room.getRoomType().equals(RoomType.DOUBLE) && !countByRoom.equals(4)) {
+                // DOUBLE인데 4명이 아닌 경우
+                return ApiResponse.failResponse();
+            } else if (room.getRoomType().equals(RoomType.SINGLE) && !countByRoom.equals(2)) {
+                // SINGLE인데 2명이 아닌 경우
+                return ApiResponse.failResponse();
+            }
+
+            // 방의 상태가 WAIT 상태일 때만 시작 가능
+            if (!room.getStatus().equals(RoomStatus.WAIT)) {
+                return ApiResponse.failResponse();
+            }
+
+            // 방의 상태 PROGRESS로 변경
+            // updateAt 갱신
+            LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+            Room saveRoom = Room.builder()
+                    .id(roomId)
+                    .title(room.getTitle())
+                    .host(user)
+                    .room_type(room.getRoomType())
+                    .status(RoomStatus.PROGRESS)
+                    .created_at(room.getCreatedAt())
+                    .updated_at(now)
+                    .build();
+            roomRepository.save(saveRoom);
+
+            return ApiResponse.successResponse(null);
+        } catch (Exception e) {
             return ApiResponse.errorResponse();
         }
     }
@@ -127,5 +196,4 @@ public class GameServiceImpl implements GameService{
                 .updated_at(now)
                 .build();
     }
-
 }

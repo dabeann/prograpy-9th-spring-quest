@@ -8,4 +8,6 @@ public interface GameService {
     ApiResponse<Object> healthCheck();
 
     ApiResponse<Object> init(InitRequest initRequest);
+
+    ApiResponse<Object> gameStart(Integer roomId, Integer userId);
 }
