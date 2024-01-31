@@ -1,5 +1,6 @@
 package prograpy.quest.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -29,16 +30,16 @@ public class Room {
 
     @OneToOne
     @JoinColumn(name = "user_id")
-    private User host;
+    private User hostId;
 
     @Enumerated(EnumType.STRING)
-    private RoomType room_type;
+    private RoomType roomType;
 
     @Enumerated(EnumType.STRING)
     private RoomStatus status;
 
-    private LocalDateTime created_at;
-    private LocalDateTime updated_at;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     public enum RoomType {
         SINGLE, // 단식
@@ -56,10 +57,10 @@ public class Room {
                 LocalDateTime updated_at) {
         this.id = id;
         this.title = title;
-        this.host = host;
-        this.room_type = room_type;
+        this.hostId = host;
+        this.roomType = room_type;
         this.status = status;
-        this.created_at = created_at;
-        this.updated_at = updated_at;
+        this.createdAt = created_at;
+        this.updatedAt = updated_at;
     }
 }

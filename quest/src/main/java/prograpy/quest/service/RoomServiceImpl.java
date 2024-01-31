@@ -22,6 +22,7 @@ import prograpy.quest.repository.UserRepository;
 import prograpy.quest.repository.UserRoomRepository;
 import prograpy.quest.request.RoomCreateRequest;
 import prograpy.quest.response.ApiResponse;
+import prograpy.quest.response.RoomDto;
 import prograpy.quest.response.RoomListResponse;
 import prograpy.quest.response.RoomListResponse.PageRoom;
 
@@ -37,7 +38,6 @@ public class RoomServiceImpl implements RoomService{
     // 방 생성 API
     @Override
     public ApiResponse<Object> createRoom(RoomCreateRequest request) {
-
         try {
             Optional<User> hostUser = userRepository.findById(request.getUserId());
 
@@ -94,13 +94,7 @@ public class RoomServiceImpl implements RoomService{
 
             List<PageRoom> pageRooms = new ArrayList<>();
             for (Room room : rooms) {
-                PageRoom pageRoom = PageRoom.builder()
-                        .id(room.getId())
-                        .title(room.getTitle())
-                        .hostId(room.getHost().getId())
-                        .roomType(String.valueOf(room.getRoom_type()))
-                        .status(String.valueOf(room.getStatus()))
-                        .build();
+                PageRoom pageRoom = PageRoom.fromEntity(room);
                 pageRooms.add(pageRoom);
             }
 
@@ -116,5 +110,22 @@ public class RoomServiceImpl implements RoomService{
         }
     }
 
+    // 방 상세 조회 API
+    @Override
+    public ApiResponse<RoomDto> findRoomDetails(Integer roomId) {
+        try {
+            Optional<Room> findRoom = roomRepository.findById(roomId);
+            if (findRoom.isPresent()) {
+                Room room = findRoom.get();
+                RoomDto roomDto = RoomDto.fromEntity(room);
+                return ApiResponse.successResponse(roomDto);
+            } else {
+                // 존재하지 않는 id에 대한 요청 - 201 response
+                return ApiResponse.failResponse();
+            }
+        } catch (Exception e) {
+            return ApiResponse.failResponse();
+        }
+    }
 
 }
