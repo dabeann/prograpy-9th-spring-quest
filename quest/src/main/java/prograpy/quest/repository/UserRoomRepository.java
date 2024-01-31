@@ -15,4 +15,10 @@ public interface UserRoomRepository extends JpaRepository<UserRoom, Integer> {
     Integer countUserRoomsByUserId(User user);
 
     Integer countUserRoomsByRoomIdAndTeam(Room room, Team team);
+
+    Optional<UserRoom> findUserRoomByRoomIdAndUserId(Room room, User user);
+
+    void deleteUserRoomsByRoomId(Room room);
+
+    void deleteUserRoomByRoomIdAndUserId(Room room, User user);
 }

@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import prograpy.quest.model.Room;
 import prograpy.quest.model.Room.RoomStatus;
 import prograpy.quest.model.Room.RoomType;
@@ -214,6 +215,61 @@ public class RoomServiceImpl implements RoomService{
         }
     }
 
+    // 방 나가기 API
+    @Override
+    @Transactional
+    public ApiResponse<Object> exitRoom(Integer roomId, Integer userId) {
 
+        try {
+            Optional<Room> findRoom = roomRepository.findById(roomId);
+            Optional<User> findUser = userRepository.findById(userId);
 
+            if (findRoom.isEmpty() || findUser.isEmpty()) {
+                // 존재하지 않는 id에 대한 요청 - 201 response
+                return ApiResponse.failResponse();
+            }
+
+            Room room = findRoom.get();
+            User user = findUser.get();
+
+            // User가 Room에 참가한 상태일 때만 나가기 가능
+            Optional<UserRoom> findUserRoom = userRoomRepository.findUserRoomByRoomIdAndUserId(room, user);
+            if (findUserRoom.isEmpty()) {
+                return ApiResponse.failResponse();
+            }
+            UserRoom userRoom = findUserRoom.get();
+
+            // PROGRESS or FINISH 상태의 방은 나갈 수 없음 - 201 response
+            // WAIT 상태의 방만 나가기 가능
+            if (!room.getStatus().equals(RoomStatus.WAIT)) {
+                return ApiResponse.failResponse();
+            }
+
+            if (room.getHostId().equals(user)) {
+                // host가 방을 나가면 그 방의 모든 사람들 나감
+                userRoomRepository.deleteUserRoomsByRoomId(room);
+                // 방은 FINISH 상태로 바뀜
+                // updateAt 갱신
+                LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+                Room saveRoom = Room.builder()
+                        .id(roomId)
+                        .title(room.getTitle())
+                        .host(user)
+                        .room_type(room.getRoomType())
+                        .status(RoomStatus.FINISH)
+                        .created_at(room.getCreatedAt())
+                        .updated_at(now)
+                        .build();
+                roomRepository.save(saveRoom);
+            } else {
+                // 해당 user만 방을 나감
+                userRoomRepository.deleteUserRoomByRoomIdAndUserId(room, user);
+            }
+
+            return ApiResponse.successResponse(null);
+
+        } catch (Exception e) {
+            return ApiResponse.errorResponse();
+        }
+    }
 }

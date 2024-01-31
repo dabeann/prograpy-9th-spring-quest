@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import prograpy.quest.model.Room;
 import prograpy.quest.request.RoomCreateRequest;
 import prograpy.quest.request.UserIdRequest;
 import prograpy.quest.response.ApiResponse;
@@ -49,4 +48,8 @@ public class RoomController {
     }
 
     // 방 나가기
+    @PostMapping("/room/out/{roomId}")
+    public ApiResponse<Object> exitRoom(@PathVariable Integer roomId, @RequestBody UserIdRequest userId) {
+        return roomService.exitRoom(roomId, userId.getUserId());
+    }
 }

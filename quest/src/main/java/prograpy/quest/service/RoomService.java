@@ -14,4 +14,6 @@ public interface RoomService {
     ApiResponse<RoomDto> findRoomDetails(Integer roomId);
 
     ApiResponse<Object> participateRoom(Integer roomId, Integer userId);
+
+    ApiResponse<Object> exitRoom(Integer roomId, Integer userId);
 }
