@@ -128,4 +128,92 @@ public class RoomServiceImpl implements RoomService{
         }
     }
 
+    // 방 참가 API
+    @Override
+    public ApiResponse<Object> participateRoom(Integer roomId, Integer userId) {
+        try {
+
+            Optional<Room> findRoom = roomRepository.findById(roomId);
+            Optional<User> findUser = userRepository.findById(userId);
+
+            if (findRoom.isEmpty() || findUser.isEmpty()) {
+                // 존재하지 않는 id에 대한 요청 - 201 response
+                return ApiResponse.failResponse();
+            }
+
+            Room room = findRoom.get();
+            User user = findUser.get();
+
+            if (!room.getStatus().equals(RoomStatus.WAIT) || !user.getStatus().equals(UserStatus.ACTIVE)) {
+                // WAIT 상태인 Room이 아닌 경우
+                // ACTIVE 상태인 User가 아닌 경우
+                // 201 response
+                return ApiResponse.failResponse();
+            }
+
+            // Room의 정원이 가득 찬 경우 - 201 response
+            Integer countByRoom = userRoomRepository.countUserRoomsByRoomId(room);
+            RoomType roomType = room.getRoomType();
+            if (roomType.equals(RoomType.DOUBLE) && countByRoom.equals(4)) {
+                return ApiResponse.failResponse();
+            }
+            if (roomType.equals(RoomType.SINGLE) && countByRoom.equals(2)) {
+                return ApiResponse.failResponse();
+            }
+            // User가 참여한 방이 있을 경우 - 201 response
+            Integer countByUser = userRoomRepository.countUserRoomsByUserId(user);
+            if (countByUser >= 1) {
+                return ApiResponse.failResponse();
+            }
+
+            // 방이 꽉차지 않은 상태
+            // 어디로 들어갈지 정해야 함
+            Integer redTeamCount = userRoomRepository.countUserRoomsByRoomIdAndTeam(room, Team.RED);
+            Integer blueTeamCount = userRoomRepository.countUserRoomsByRoomIdAndTeam(room, Team.BLUE);
+            Team assignTeam;
+            if (roomType.equals(RoomType.DOUBLE)) {
+                // DOUBLE인 경우 2 : 2
+                if (redTeamCount.equals(2)) {
+                    // RED team에 인원이 가득 찬 경우
+                    // BLUE team으로 배정
+                    assignTeam = Team.BLUE;
+                } else if (blueTeamCount.equals(2)) {
+                    // BLUE team에 인원이 가득 찬 경우
+                    // RED team으로 배정
+                    assignTeam = Team.RED;
+                } else {
+                    // 양쪽 팀에 모두 자리가 있는 경우
+                    // RED team에 배정
+                    assignTeam = Team.RED;
+                }
+            } else {
+                // SINGLE인 경우 1 : 1
+                // 양쪽 팀에 모두 자리가 없는 경우 X
+                if (redTeamCount.equals(1)) {
+                    // RED team에 인원이 가득 찬 경우
+                    // BLUE team에 배정
+                    assignTeam = Team.BLUE;
+                } else {
+                    // BLUE team에 인원이 가득 찬 경우
+                    // RED team에 배정
+                    assignTeam = Team.RED;
+                }
+            }
+
+            // 저장
+            UserRoom userRoom = UserRoom.builder()
+                    .roomId(room)
+                    .userId(user)
+                    .team(assignTeam)
+                    .build();
+            userRoomRepository.save(userRoom);
+
+            return ApiResponse.successResponse(null);
+        } catch (Exception e) {
+            return ApiResponse.errorResponse();
+        }
+    }
+
+
+
 }

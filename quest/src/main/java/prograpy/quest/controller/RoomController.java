@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import prograpy.quest.model.Room;
 import prograpy.quest.request.RoomCreateRequest;
+import prograpy.quest.request.UserIdRequest;
 import prograpy.quest.response.ApiResponse;
 import prograpy.quest.response.RoomDto;
 import prograpy.quest.response.RoomListResponse;
@@ -41,8 +42,11 @@ public class RoomController {
         return roomService.findRoomDetails(roomId);
     }
 
-    // 방 나가기
-
     // 방 참가
+    @PostMapping("/room/attention/{roomId}")
+    public ApiResponse<Object> participateRoom(@PathVariable Integer roomId, @RequestBody UserIdRequest userId) {
+        return roomService.participateRoom(roomId, userId.getUserId());
+    }
 
+    // 방 나가기
 }

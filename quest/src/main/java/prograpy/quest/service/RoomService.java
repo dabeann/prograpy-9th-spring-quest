@@ -1,6 +1,5 @@
 package prograpy.quest.service;
 
-import prograpy.quest.model.Room;
 import prograpy.quest.request.RoomCreateRequest;
 import prograpy.quest.response.ApiResponse;
 import prograpy.quest.response.RoomDto;
@@ -13,4 +12,6 @@ public interface RoomService {
     ApiResponse<RoomListResponse> findAllRooms(int size, int page);
 
     ApiResponse<RoomDto> findRoomDetails(Integer roomId);
+
+    ApiResponse<Object> participateRoom(Integer roomId, Integer userId);
 }
