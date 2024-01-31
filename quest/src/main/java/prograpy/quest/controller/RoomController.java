@@ -2,11 +2,15 @@ package prograpy.quest.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import prograpy.quest.model.Room;
 import prograpy.quest.request.RoomCreateRequest;
 import prograpy.quest.response.ApiResponse;
+import prograpy.quest.response.RoomListResponse;
 import prograpy.quest.service.RoomService;
 
 @RestController
@@ -22,11 +26,17 @@ public class RoomController {
         return roomService.createRoom(request);
     }
 
+    // 방 전체 조회
+    @GetMapping("/room")
+    public ApiResponse<RoomListResponse> findAllRooms(@RequestParam(name = "size", defaultValue = "0") int size,
+                                                      @RequestParam(name = "page", defaultValue = "10") int page) {
+        return roomService.findAllRooms(size, page);
+    }
+
     // 방 나가기
 
     // 방 참가
 
     // 방 상세 조회
 
-    // 방 전체 조회
 }

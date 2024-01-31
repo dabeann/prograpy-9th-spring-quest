@@ -2,8 +2,13 @@ package prograpy.quest.service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import prograpy.quest.model.Room;
 import prograpy.quest.model.Room.RoomStatus;
@@ -17,6 +22,9 @@ import prograpy.quest.repository.UserRepository;
 import prograpy.quest.repository.UserRoomRepository;
 import prograpy.quest.request.RoomCreateRequest;
 import prograpy.quest.response.ApiResponse;
+import prograpy.quest.response.RoomListResponse;
+import prograpy.quest.response.RoomListResponse.PageRoom;
+
 @Service
 @RequiredArgsConstructor
 
@@ -76,4 +84,37 @@ public class RoomServiceImpl implements RoomService{
             return ApiResponse.errorResponse();
         }
     }
+
+    // 방 전체 조회 API
+    @Override
+    public ApiResponse<RoomListResponse> findAllRooms(int size, int page) {
+        try {
+            PageRequest pageRequest = PageRequest.of(page, size, Sort.by("id").ascending());
+            Page<Room> rooms = roomRepository.findAll(pageRequest);
+
+            List<PageRoom> pageRooms = new ArrayList<>();
+            for (Room room : rooms) {
+                PageRoom pageRoom = PageRoom.builder()
+                        .id(room.getId())
+                        .title(room.getTitle())
+                        .hostId(room.getHost().getId())
+                        .roomType(String.valueOf(room.getRoom_type()))
+                        .status(String.valueOf(room.getStatus()))
+                        .build();
+                pageRooms.add(pageRoom);
+            }
+
+            RoomListResponse roomListResponse = RoomListResponse.builder()
+                    .totalElements((int) rooms.getTotalElements())
+                    .totalPages(rooms.getTotalPages())
+                    .roomList(pageRooms)
+                    .build();
+
+            return ApiResponse.successResponse(roomListResponse);
+        } catch (Exception e) {
+            return ApiResponse.errorResponse();
+        }
+    }
+
+
 }
