@@ -36,10 +36,10 @@ public class User {
     private UserStatus status;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime created_at;
+    private LocalDateTime createdAt;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime updated_at;
+    private LocalDateTime updatedAt;
 
     public enum UserStatus {
         WAIT, // 대기
@@ -55,7 +55,7 @@ public class User {
         this.name = name;
         this.email = email;
         this.status = status;
-        this.created_at = created_at;
-        this.updated_at = updated_at;
+        this.createdAt = created_at;
+        this.updatedAt = updated_at;
     }
 }
