@@ -43,7 +43,6 @@ public class RoomServiceImpl implements RoomService{
             Optional<User> hostUser = userRepository.findById(request.getUserId());
 
             if (hostUser.isEmpty()){
-                // 잘못된 user id
                 return ApiResponse.failResponse();
             }
 
@@ -52,7 +51,6 @@ public class RoomServiceImpl implements RoomService{
             if (hostUser.get().getStatus().equals(UserStatus.ACTIVE) && participatingRoom.isEmpty()) {
                 // 방 생성 가능
                 LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
-
                 Room room = Room.builder()
                         .title(request.getTitle())
                         .host(hostUser.get())
@@ -63,11 +61,6 @@ public class RoomServiceImpl implements RoomService{
                         .build();
                 roomRepository.save(room);
 
-                /**
-                 * host가 방 나가면 방 사라짐
-                 * -> host도 게임에 참가
-                 * -> 양쪽 팀에 모두 자리가 있으므로 RED에 배정
-                 */
                 UserRoom userRoom = UserRoom.builder()
                         .roomId(room)
                         .userId(hostUser.get())
@@ -80,7 +73,6 @@ public class RoomServiceImpl implements RoomService{
                 // 방 생성 불가능
                 return ApiResponse.failResponse();
             }
-
         } catch (Exception e) {
             return ApiResponse.errorResponse();
         }
@@ -98,7 +90,6 @@ public class RoomServiceImpl implements RoomService{
                 PageRoom pageRoom = PageRoom.fromEntity(room);
                 pageRooms.add(pageRoom);
             }
-
             RoomListResponse roomListResponse = RoomListResponse.builder()
                     .totalElements((int) rooms.getTotalElements())
                     .totalPages(rooms.getTotalPages())
@@ -121,7 +112,6 @@ public class RoomServiceImpl implements RoomService{
                 RoomDto roomDto = RoomDto.fromEntity(room);
                 return ApiResponse.successResponse(roomDto);
             } else {
-                // 존재하지 않는 id에 대한 요청 - 201 response
                 return ApiResponse.failResponse();
             }
         } catch (Exception e) {
@@ -133,26 +123,20 @@ public class RoomServiceImpl implements RoomService{
     @Override
     public ApiResponse<Object> participateRoom(Integer roomId, Integer userId) {
         try {
-
             Optional<Room> findRoom = roomRepository.findById(roomId);
             Optional<User> findUser = userRepository.findById(userId);
 
             if (findRoom.isEmpty() || findUser.isEmpty()) {
-                // 존재하지 않는 id에 대한 요청 - 201 response
                 return ApiResponse.failResponse();
             }
-
             Room room = findRoom.get();
             User user = findUser.get();
 
             if (!room.getStatus().equals(RoomStatus.WAIT) || !user.getStatus().equals(UserStatus.ACTIVE)) {
-                // WAIT 상태인 Room이 아닌 경우
-                // ACTIVE 상태인 User가 아닌 경우
-                // 201 response
                 return ApiResponse.failResponse();
             }
 
-            // Room의 정원이 가득 찬 경우 - 201 response
+            // Room의 정원이 가득 찬 경우
             Integer countByRoom = userRoomRepository.countUserRoomsByRoomId(room);
             RoomType roomType = room.getRoomType();
             if (roomType.equals(RoomType.DOUBLE) && countByRoom.equals(4)) {
@@ -161,47 +145,16 @@ public class RoomServiceImpl implements RoomService{
             if (roomType.equals(RoomType.SINGLE) && countByRoom.equals(2)) {
                 return ApiResponse.failResponse();
             }
-            // User가 참여한 방이 있을 경우 - 201 response
+            // User가 참여한 방이 있을 경우
             Integer countByUser = userRoomRepository.countUserRoomsByUserId(user);
             if (countByUser >= 1) {
                 return ApiResponse.failResponse();
             }
 
-            // 방이 꽉차지 않은 상태
-            // 어디로 들어갈지 정해야 함
             Integer redTeamCount = userRoomRepository.countUserRoomsByRoomIdAndTeam(room, Team.RED);
             Integer blueTeamCount = userRoomRepository.countUserRoomsByRoomIdAndTeam(room, Team.BLUE);
-            Team assignTeam;
-            if (roomType.equals(RoomType.DOUBLE)) {
-                // DOUBLE인 경우 2 : 2
-                if (redTeamCount.equals(2)) {
-                    // RED team에 인원이 가득 찬 경우
-                    // BLUE team으로 배정
-                    assignTeam = Team.BLUE;
-                } else if (blueTeamCount.equals(2)) {
-                    // BLUE team에 인원이 가득 찬 경우
-                    // RED team으로 배정
-                    assignTeam = Team.RED;
-                } else {
-                    // 양쪽 팀에 모두 자리가 있는 경우
-                    // RED team에 배정
-                    assignTeam = Team.RED;
-                }
-            } else {
-                // SINGLE인 경우 1 : 1
-                // 양쪽 팀에 모두 자리가 없는 경우 X
-                if (redTeamCount.equals(1)) {
-                    // RED team에 인원이 가득 찬 경우
-                    // BLUE team에 배정
-                    assignTeam = Team.BLUE;
-                } else {
-                    // BLUE team에 인원이 가득 찬 경우
-                    // RED team에 배정
-                    assignTeam = Team.RED;
-                }
-            }
+            Team assignTeam = getTeam(roomType, redTeamCount, blueTeamCount);
 
-            // 저장
             UserRoom userRoom = UserRoom.builder()
                     .roomId(room)
                     .userId(user)
@@ -215,20 +168,36 @@ public class RoomServiceImpl implements RoomService{
         }
     }
 
+    // 들어갈 team 결정
+    private static Team getTeam(RoomType roomType, Integer redTeamCount, Integer blueTeamCount) {
+        if (roomType.equals(RoomType.DOUBLE)) {
+            if (redTeamCount.equals(2)) {
+                return Team.BLUE;
+            } else if (blueTeamCount.equals(2)) {
+                return Team.RED;
+            } else {
+                return Team.RED;
+            }
+        } else {
+            if (redTeamCount.equals(1)) {
+                return Team.BLUE;
+            } else {
+                return Team.RED;
+            }
+        }
+    }
+
     // 방 나가기
     @Override
     @Transactional
     public ApiResponse<Object> exitRoom(Integer roomId, Integer userId) {
-
         try {
             Optional<Room> findRoom = roomRepository.findById(roomId);
             Optional<User> findUser = userRepository.findById(userId);
 
             if (findRoom.isEmpty() || findUser.isEmpty()) {
-                // 존재하지 않는 id에 대한 요청 - 201 response
                 return ApiResponse.failResponse();
             }
-
             Room room = findRoom.get();
             User user = findUser.get();
 
@@ -237,19 +206,13 @@ public class RoomServiceImpl implements RoomService{
             if (findUserRoom.isEmpty()) {
                 return ApiResponse.failResponse();
             }
-            UserRoom userRoom = findUserRoom.get();
-
-            // PROGRESS or FINISH 상태의 방은 나갈 수 없음 - 201 response
             // WAIT 상태의 방만 나가기 가능
             if (!room.getStatus().equals(RoomStatus.WAIT)) {
                 return ApiResponse.failResponse();
             }
 
             if (room.getHostId().equals(user)) {
-                // host가 방을 나가면 그 방의 모든 사람들 나감
                 userRoomRepository.deleteUserRoomsByRoomId(room);
-                // 방은 FINISH 상태로 바뀜
-                // updateAt 갱신
                 LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
                 Room saveRoom = Room.builder()
                         .id(roomId)
@@ -262,7 +225,6 @@ public class RoomServiceImpl implements RoomService{
                         .build();
                 roomRepository.save(saveRoom);
             } else {
-                // 해당 user만 방을 나감
                 userRoomRepository.deleteUserRoomByRoomIdAndUserId(room, user);
             }
 
