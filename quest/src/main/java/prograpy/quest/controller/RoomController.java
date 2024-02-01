@@ -22,32 +22,32 @@ public class RoomController {
 
     private final RoomService roomService;
 
-    // 방 생성
+    // 방 생성 API
     @PostMapping("/room")
     public ApiResponse<Object> createRoom(@RequestBody RoomCreateRequest request) {
         return roomService.createRoom(request);
     }
 
-    // 방 전체 조회
+    // 방 전체 조회 API
     @GetMapping("/room")
     public ApiResponse<RoomListResponse> findAllRooms(@RequestParam(name = "size", defaultValue = "0") int size,
                                                       @RequestParam(name = "page", defaultValue = "10") int page) {
         return roomService.findAllRooms(size, page);
     }
 
-    // 방 상세 조회
+    // 방 상세 조회 API
     @GetMapping("/room/{roomId}")
     public ApiResponse<RoomDto> findRoomDetails(@PathVariable Integer roomId) {
         return roomService.findRoomDetails(roomId);
     }
 
-    // 방 참가
+    // 방 참가 API
     @PostMapping("/room/attention/{roomId}")
     public ApiResponse<Object> participateRoom(@PathVariable Integer roomId, @RequestBody UserIdRequest userId) {
         return roomService.participateRoom(roomId, userId.getUserId());
     }
 
-    // 방 나가기
+    // 방 나가기 API
     @PostMapping("/room/out/{roomId}")
     public ApiResponse<Object> exitRoom(@PathVariable Integer roomId, @RequestBody UserIdRequest userId) {
         return roomService.exitRoom(roomId, userId.getUserId());

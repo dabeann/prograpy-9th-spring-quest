@@ -48,6 +48,13 @@ public class GameServiceImpl implements GameService{
         LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
         LocalDateTime oneMinuteAgo = LocalDateTime.now().minusMinutes(1).truncatedTo(ChronoUnit.SECONDS);
         roomRepository.updateRoomStatusAfterTime(RoomStatus.FINISH, now, oneMinuteAgo, RoomStatus.PROGRESS);
+
+        // FINISH 상태인 방에 있던 사람들 모두 나가야 함
+        // Room status가 FINISH이면 UserRoom 모두 삭제
+        Optional<Room> finishRoom = roomRepository.findRoomByStatus(RoomStatus.FINISH);
+        if (finishRoom.isPresent()) {
+            userRoomRepository.deleteUserRoomsByRoomId(finishRoom.get());
+        }
     }
 
     // 헬스체크
@@ -119,7 +126,7 @@ public class GameServiceImpl implements GameService{
         }
     }
 
-    // 게임시작 API
+    // 게임시작
     @Override
     public ApiResponse<Object> gameStart(Integer roomId, Integer userId) {
         try {

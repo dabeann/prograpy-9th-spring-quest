@@ -36,7 +36,7 @@ public class RoomServiceImpl implements RoomService{
     private final UserRoomRepository userRoomRepository;
     private final RoomRepository roomRepository;
 
-    // 방 생성 API
+    // 방 생성
     @Override
     public ApiResponse<Object> createRoom(RoomCreateRequest request) {
         try {
@@ -86,7 +86,7 @@ public class RoomServiceImpl implements RoomService{
         }
     }
 
-    // 방 전체 조회 API
+    // 방 전체 조회
     @Override
     public ApiResponse<RoomListResponse> findAllRooms(int size, int page) {
         try {
@@ -111,7 +111,7 @@ public class RoomServiceImpl implements RoomService{
         }
     }
 
-    // 방 상세 조회 API
+    // 방 상세 조회
     @Override
     public ApiResponse<RoomDto> findRoomDetails(Integer roomId) {
         try {
@@ -129,7 +129,7 @@ public class RoomServiceImpl implements RoomService{
         }
     }
 
-    // 방 참가 API
+    // 방 참가
     @Override
     public ApiResponse<Object> participateRoom(Integer roomId, Integer userId) {
         try {
@@ -215,7 +215,7 @@ public class RoomServiceImpl implements RoomService{
         }
     }
 
-    // 방 나가기 API
+    // 방 나가기
     @Override
     @Transactional
     public ApiResponse<Object> exitRoom(Integer roomId, Integer userId) {
