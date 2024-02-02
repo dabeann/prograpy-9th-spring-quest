@@ -113,10 +113,12 @@ public class RoomServiceImpl implements RoomService{
                 RoomDto roomDto = RoomDto.fromEntity(room);
                 return ApiResponse.successResponse(roomDto);
             } else {
+                System.out.println("findRoom = " + findRoom);
                 return ApiResponse.failResponse();
             }
         } catch (Exception e) {
-            return ApiResponse.failResponse();
+            System.out.println("e.getMessage() = " + e.getMessage());
+            return ApiResponse.errorResponse();
         }
     }
 

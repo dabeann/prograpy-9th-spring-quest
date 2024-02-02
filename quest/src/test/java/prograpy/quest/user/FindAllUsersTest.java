@@ -43,8 +43,8 @@ public class FindAllUsersTest {
     @Test
     @DisplayName("findAllUsers 성공 테스트")
     void success() {
-        User user1 = User.builder().name("hi").build();
-        User user2 = User.builder().name("hi2").build();
+        User user1 = User.builder().id(1).name("hi").build();
+        User user2 = User.builder().id(2).name("hi2").build();
 
         PageImpl<User> fakePage = new PageImpl<>(List.of(user1, user2));
         when(userRepository.findAll(any(PageRequest.class))).thenReturn(fakePage);
