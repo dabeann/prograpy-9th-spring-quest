@@ -35,6 +35,8 @@ public class FindAllUsersTest {
     @BeforeEach
     void setUp() {
         userRepository = mock(UserRepository.class);
+        roomRepository = mock(RoomRepository.class);
+        userRoomRepository = mock(UserRoomRepository.class);
         userService = new UserServiceImpl(userRepository, roomRepository, userRoomRepository);
     }
 

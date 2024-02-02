@@ -55,27 +55,4 @@ public class InitTest {
         assertNull(response.getResult());
     }
 
-/*    @Test
-    @Commit
-    void status() {
-        int seed = 1;
-        int quantity = 10;
-        InitRequest initRequest = new InitRequest(seed, quantity);
-
-        gameService.init(initRequest);
-
-        List<User> storedUsers = userRepository.findAll();
-        System.out.println("storedUsers = " + storedUsers);
-        for (User storedUser : storedUsers) {
-            UserStatus userStatus = storedUser.getStatus();
-            System.out.println("userStatus = " + userStatus);
-            if (storedUser.getId() <= 30) {
-                assertEquals(UserStatus.ACTIVE, userStatus);
-            } else if (storedUser.getId() <= 60) {
-                assertEquals(UserStatus.WAIT, userStatus);
-            } else {
-                assertEquals(UserStatus.NON_ACTIVE, userStatus);
-            }
-        }
-    }*/
 }

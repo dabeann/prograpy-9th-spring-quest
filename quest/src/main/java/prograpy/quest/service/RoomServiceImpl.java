@@ -98,6 +98,7 @@ public class RoomServiceImpl implements RoomService{
 
             return ApiResponse.successResponse(roomListResponse);
         } catch (Exception e) {
+            System.out.println("e.getMessage() = " + e.getMessage());
             return ApiResponse.errorResponse();
         }
     }
