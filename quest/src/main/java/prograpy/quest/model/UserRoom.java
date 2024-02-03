@@ -1,5 +1,6 @@
 package prograpy.quest.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -23,19 +24,23 @@ public class UserRoom {
     @Id
     @Column(name = "user_room_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "고유 아이디")
     private Integer id;
 
     // N:1 room
     @ManyToOne(fetch = FetchType.LAZY)
+    @Schema(description = "해당 방 아이디")
     @JoinColumn(name = "room_id")
     private Room roomId;
 
     // N:1 user
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
+    @Schema(description = "해당 유저 아이디")
     private User userId;
 
     @Enumerated(EnumType.STRING)
+    @Schema(description = "속한 팀: 레드, 블루")
     private Team team;
 
     public enum Team {

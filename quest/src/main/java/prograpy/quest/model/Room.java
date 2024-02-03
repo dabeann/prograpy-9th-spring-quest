@@ -1,6 +1,7 @@
 package prograpy.quest.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,7 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -20,26 +20,35 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Schema(description = "방")
 public class Room {
 
     @Id
     @Column(name = "room_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "고유 아이디")
     private Integer id;
 
+    @Schema(description = "제목")
     private String title;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @Schema(description = "호스트 아이디")
     private User hostId;
 
     @Enumerated(EnumType.STRING)
+    @Schema(description = "방 유형: 단식, 복식")
     private RoomType roomType;
 
     @Enumerated(EnumType.STRING)
+    @Schema(description = "방 상태: 대기, 진행중, 완료")
     private RoomStatus status;
 
+    @Schema(description = "생성된 시간", example = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
+
+    @Schema(description = "변경된 시간", example = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedAt;
 
     public enum RoomType {

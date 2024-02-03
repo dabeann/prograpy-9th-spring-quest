@@ -1,6 +1,7 @@
 package prograpy.quest.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -24,20 +25,28 @@ public class User {
     @Id
     @Column(name = "user_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "고유 아이디")
     private Integer id;
 
     @Column(name = "faker_id")
+    @Schema(description = "외부 api 아이디")
     private Integer fakerId;
 
+    @Schema(description = "이름", example = "jungran.gwon")
     private String name;
+
+    @Schema(description = "이메일", example = "knam@example.com")
     private String email;
 
+    @Schema(description = "유저 상태: 대기, 활성, 비활성")
     @Enumerated(EnumType.STRING)
     private UserStatus status;
 
+    @Schema(description = "생성된 시간", example = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
 
+    @Schema(description = "수정된 시간", example = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedAt;
 

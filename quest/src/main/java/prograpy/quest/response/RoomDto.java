@@ -1,5 +1,6 @@
 package prograpy.quest.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import lombok.Builder;
@@ -14,7 +15,11 @@ public class RoomDto {
     private int hostId;
     private String roomType;
     private String status;
+
+    @Schema(description = "생성된 시간", example = "yyyy-MM-dd HH:mm:ss")
     private String createdAt;
+
+    @Schema(description = "수정된 시간", example = "yyyy-MM-dd HH:mm:ss")
     private String updatedAt;
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
